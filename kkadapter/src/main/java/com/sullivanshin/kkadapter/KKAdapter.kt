@@ -1,15 +1,15 @@
 package com.sullivanshin.kkadapter
 
 import android.support.annotation.IdRes
+import android.support.annotation.LayoutRes
 import android.support.v7.widget.RecyclerView
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import java.util.concurrent.atomic.AtomicInteger
 import kotlin.reflect.KClass
-import kotlin.reflect.full.superclasses
 
-class KKAdapter constructor(private val layoutMap: Map<KClass<*>, Int>, private var items: List<*>) : RecyclerView.Adapter<KKAdapter.VH>() {
+class KKAdapter constructor(private var items: List<*>) : RecyclerView.Adapter<KKAdapter.VH>() {
 
     private val viewTypeLayoutMap = mutableMapOf<Int, Int>()
     private val classViewTypeMap = mutableMapOf<KClass<*>, Int>()
@@ -32,27 +32,14 @@ class KKAdapter constructor(private val layoutMap: Map<KClass<*>, Int>, private 
 
     override fun getItemViewType(position: Int): Int {
         val item = items[position] as Any
-        val viewTypeId = classViewTypeMap.getOrPut(item::class, { incremental.getAndIncrement() })
 
+        val viewTypeId = classViewTypeMap.getOrPut(item::class, { incremental.getAndIncrement() })
         viewTypeLayoutMap.getOrPut(viewTypeId, {
-            layoutMap[item::class]
-                    ?: item::class.superclasses.firstOrNull { layoutMap[it] != null }?.let { layoutMap[it] }
-                    ?: throw IllegalStateException("can't resolve view type ${item::class}")
+            item::class.annotations.firstOrNull { annotation -> annotation is ViewLayout }?.let { (it as ViewLayout).layoutId }
+                    ?: throw IllegalStateException("item should be annotated ViewLayout")
         })
 
         return viewTypeId
-    }
-
-    class Builder {
-        private val layoutMap = mutableMapOf<KClass<*>, Int>()
-        fun register(clazz: KClass<*>, layoutId: Int): Builder {
-            layoutMap[clazz] = layoutId
-            return this
-        }
-
-        fun build(list: List<*>): KKAdapter {
-            return KKAdapter(layoutMap, list)
-        }
     }
 
     class VH(itemView: View) : RecyclerView.ViewHolder(itemView) {
@@ -73,6 +60,6 @@ class KKAdapter constructor(private val layoutMap: Map<KClass<*>, Int>, private 
     }
 }
 
-
-
-
+@Target(AnnotationTarget.CLASS)
+@Retention(AnnotationRetention.RUNTIME)
+annotation class ViewLayout(@LayoutRes val layoutId: Int)
