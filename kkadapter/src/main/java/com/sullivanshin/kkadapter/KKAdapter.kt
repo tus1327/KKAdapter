@@ -35,7 +35,9 @@ class KKAdapter constructor(private var items: List<*>) : RecyclerView.Adapter<K
 
         val viewTypeId = classViewTypeMap.getOrPut(item::class, { incremental.getAndIncrement() })
         viewTypeLayoutMap.getOrPut(viewTypeId, {
-            item::class.annotations.firstOrNull { annotation -> annotation is ViewLayout }?.let { (it as ViewLayout).layoutId }
+            item::class.annotations
+                    .firstOrNull { it is ViewLayout }
+                    ?.let { (it as ViewLayout).layoutId }
                     ?: throw IllegalStateException("item should be annotated ViewLayout")
         })
 
@@ -45,12 +47,13 @@ class KKAdapter constructor(private var items: List<*>) : RecyclerView.Adapter<K
     class VH(itemView: View) : RecyclerView.ViewHolder(itemView) {
         private val intMap = mutableMapOf<Int, View>()
 
-        @Suppress("UNCHECKED_CAST")
+
         fun <T : View> present(@IdRes id: Int, function: T.() -> Unit) {
             val view = intMap.getOrPut(id) {
                 itemView.findViewById(id)
                         ?: throw IllegalArgumentException("can't find view " + itemView.resources.getResourceName(id))
             }
+            @Suppress("UNCHECKED_CAST")
             (view as T).function()
         }
     }
