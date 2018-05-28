@@ -1,5 +1,7 @@
 # KKAdapter
 
+[![](https://jitpack.io/v/tus1327/KKAdapter.svg)](https://jitpack.io/#tus1327/KKAdapter)
+
 - step 1
 
 ``` 
@@ -14,6 +16,6 @@ allprojects {
 - step 2
 ```
 dependencies {
-	implementation 'com.github.tus1327:KKAdapter:1.0.0'
+	implementation 'com.github.tus1327:KKAdapter:1.0.1'
 }
 ```
